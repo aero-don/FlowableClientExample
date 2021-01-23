@@ -1,0 +1,17 @@
+micronaut:
+  application:
+    name: flowableClient
+  server:
+    port: 8081
+  http:
+    services:
+      sensors:
+        urls:
+          - http://localhost:8080
+sensor:
+  measurement:
+    log:
+      rate: 30 # seconds
+    retry:
+      wait: 2 # seconds
+
