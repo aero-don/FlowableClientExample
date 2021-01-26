@@ -7,6 +7,7 @@ import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Context
 import io.micronaut.context.annotation.Property
 import io.micronaut.context.event.ApplicationEventListener
+import io.micronaut.http.client.DefaultHttpClientConfiguration
 import io.micronaut.http.client.exceptions.HttpClientException
 import io.micronaut.scheduling.TaskScheduler
 import io.reactivex.Flowable
@@ -48,7 +49,7 @@ class SubscribeSensorMeasurementEventListener implements ApplicationEventListene
 
     @PostConstruct
     void startSubscribeSensorMeasurement() {
-        logger.info("Initializing SensorMeasurements subscription")
+        logger.info("Initializing SensorMeasurements subscription, DefaultHttpClientConfiguration.DEFAULT_READ_IDLE_TIMEOUT_MINUTES = ${DefaultHttpClientConfiguration.DEFAULT_READ_IDLE_TIMEOUT_MINUTES}")
         onApplicationEvent(new SubscribeSensorMeasurementEvent())
     }
 
@@ -79,7 +80,7 @@ class SubscribeSensorMeasurementEventListener implements ApplicationEventListene
         @Override
         void onNext(SensorMeasurement sensorMeasurement) {
             sensorMeasurementsProcessed++
-            if (!lastLogged || Instant.now() >= lastLogged.plusSeconds(sensorMeasurementLogRate)) {
+            if (!lastLogged || Instant.now().plusMillis(10) >= lastLogged.plusSeconds(sensorMeasurementLogRate)) {
                 logger.info("sensorMeasurementsProcessed: ${sensorMeasurementsProcessed} :: sensorMeasurement: ${sensorMeasurement}")
                 lastLogged = Instant.now()
             }

@@ -4,6 +4,8 @@ micronaut:
   server:
     port: 8081
   http:
+    client:
+#      read-idle-timeout: 1m
     services:
       sensors:
         urls:
@@ -11,7 +13,7 @@ micronaut:
 sensor:
   measurement:
     log:
-      rate: 30 # seconds
+      rate: 1 # seconds
     retry:
       wait: 2 # seconds
 
