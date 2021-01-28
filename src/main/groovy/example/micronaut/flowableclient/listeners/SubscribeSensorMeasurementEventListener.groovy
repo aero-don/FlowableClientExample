@@ -35,7 +35,7 @@ class SubscribeSensorMeasurementEventListener implements ApplicationEventListene
     Integer sensorMeasurementLogRate
 
     Integer sensorMeasurementsProcessed = new Integer(0)
-    Instant lastLogged
+    Instant nextLogInstant
 
     SensorMeasurementService sensorMeasurementService
     TaskScheduler taskScheduler
@@ -73,6 +73,7 @@ class SubscribeSensorMeasurementEventListener implements ApplicationEventListene
         @Override
         void onSubscribe(Subscription subscription) {
             this.subscription = subscription
+            // this.subscription.request(Long.MAX_VALUE)
             this.subscription.request(1)
             logger.info("SensorMeasurements subscription complete")
         }
@@ -80,9 +81,10 @@ class SubscribeSensorMeasurementEventListener implements ApplicationEventListene
         @Override
         void onNext(SensorMeasurement sensorMeasurement) {
             sensorMeasurementsProcessed++
-            if (!lastLogged || Instant.now().plusMillis(10) >= lastLogged.plusSeconds(sensorMeasurementLogRate)) {
+            Instant now = Instant.now()
+            if (!nextLogInstant || now.plusMillis(1) >= nextLogInstant) {
                 logger.info("sensorMeasurementsProcessed: ${sensorMeasurementsProcessed} :: sensorMeasurement: ${sensorMeasurement}")
-                lastLogged = Instant.now()
+                nextLogInstant = now.plusSeconds(sensorMeasurementLogRate)
             }
             subscription.request(1)
         }
