@@ -7,17 +7,17 @@ import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Context
 import io.micronaut.context.annotation.Property
 import io.micronaut.context.event.ApplicationEventListener
+import io.micronaut.context.event.StartupEvent
 import io.micronaut.http.client.DefaultHttpClientConfiguration
 import io.micronaut.http.client.exceptions.HttpClientException
+import io.micronaut.runtime.event.annotation.EventListener
 import io.micronaut.scheduling.TaskScheduler
-import io.reactivex.Flowable
 import io.reactivex.schedulers.Schedulers
 import org.reactivestreams.Subscriber
 import org.reactivestreams.Subscription
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-import javax.annotation.PostConstruct
 import javax.inject.Singleton
 import java.time.Duration
 import java.time.Instant
@@ -47,10 +47,10 @@ class SubscribeSensorMeasurementEventListener implements ApplicationEventListene
         this.taskScheduler =  taskScheduler
     }
 
-    @PostConstruct
-    void startSubscribeSensorMeasurement() {
+    @EventListener
+    void startSubscribeSensorMeasurement(StartupEvent startupEvent) {
         logger.info("Initializing SensorMeasurements subscription, DefaultHttpClientConfiguration.DEFAULT_READ_IDLE_TIMEOUT_MINUTES = ${DefaultHttpClientConfiguration.DEFAULT_READ_IDLE_TIMEOUT_MINUTES}")
-        onApplicationEvent(new SubscribeSensorMeasurementEvent())
+        sensorMeasurementService.publishSubscribeSensorMeasurementEvent()
     }
 
     @Override
