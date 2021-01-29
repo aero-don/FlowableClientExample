@@ -11,16 +11,20 @@ import io.micronaut.context.event.StartupEvent
 import io.micronaut.http.client.DefaultHttpClientConfiguration
 import io.micronaut.http.client.exceptions.HttpClientException
 import io.micronaut.runtime.event.annotation.EventListener
+import io.micronaut.scheduling.TaskExecutors
 import io.micronaut.scheduling.TaskScheduler
+import io.reactivex.Scheduler
 import io.reactivex.schedulers.Schedulers
 import org.reactivestreams.Subscriber
 import org.reactivestreams.Subscription
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+import javax.inject.Named
 import javax.inject.Singleton
 import java.time.Duration
 import java.time.Instant
+import java.util.concurrent.ExecutorService
 
 @CompileStatic
 @Singleton
@@ -37,12 +41,15 @@ class SubscribeSensorMeasurementEventListener implements ApplicationEventListene
     Integer sensorMeasurementsProcessed = new Integer(0)
     Instant nextLogInstant
 
+    Scheduler scheduler
     SensorMeasurementService sensorMeasurementService
     TaskScheduler taskScheduler
 
     SubscribeSensorMeasurementEventListener(
+            @Named(TaskExecutors.IO) ExecutorService executorService,
             SensorMeasurementService sensorMeasurementService,
             TaskScheduler taskScheduler) {
+        this.scheduler = Schedulers.from(executorService)
         this.sensorMeasurementService = sensorMeasurementService
         this.taskScheduler =  taskScheduler
     }
@@ -57,8 +64,9 @@ class SubscribeSensorMeasurementEventListener implements ApplicationEventListene
     void onApplicationEvent(SubscribeSensorMeasurementEvent event) {
         logger.info("Subscribing to SensorMeasurements")
         try {
+
             sensorMeasurementService.sensorMeasurements
-                    .subscribeOn(Schedulers.io())
+                    .observeOn(scheduler)
                     .subscribe(sensorMeasurementSubscriber)
 
         } catch (Exception exception) {
