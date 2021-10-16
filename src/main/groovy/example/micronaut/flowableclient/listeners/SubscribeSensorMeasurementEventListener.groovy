@@ -13,15 +13,15 @@ import io.micronaut.http.client.exceptions.HttpClientException
 import io.micronaut.runtime.event.annotation.EventListener
 import io.micronaut.scheduling.TaskExecutors
 import io.micronaut.scheduling.TaskScheduler
-import io.reactivex.Scheduler
-import io.reactivex.schedulers.Schedulers
+import reactor.core.scheduler.Scheduler
+import reactor.core.scheduler.Schedulers
 import org.reactivestreams.Subscriber
 import org.reactivestreams.Subscription
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-import javax.inject.Named
-import javax.inject.Singleton
+import jakarta.inject.Named
+import jakarta.inject.Singleton
 import java.time.Duration
 import java.time.Instant
 import java.util.concurrent.ExecutorService
@@ -49,7 +49,7 @@ class SubscribeSensorMeasurementEventListener implements ApplicationEventListene
             @Named(TaskExecutors.IO) ExecutorService executorService,
             SensorMeasurementService sensorMeasurementService,
             TaskScheduler taskScheduler) {
-        this.scheduler = Schedulers.from(executorService)
+        this.scheduler = Schedulers.fromExecutorService(executorService)
         this.sensorMeasurementService = sensorMeasurementService
         this.taskScheduler =  taskScheduler
     }
@@ -66,7 +66,7 @@ class SubscribeSensorMeasurementEventListener implements ApplicationEventListene
         try {
 
             sensorMeasurementService.sensorMeasurements
-                    .observeOn(scheduler)
+                    .subscribeOn(scheduler)
                     .subscribe(sensorMeasurementSubscriber)
 
         } catch (Exception exception) {
@@ -81,8 +81,8 @@ class SubscribeSensorMeasurementEventListener implements ApplicationEventListene
         @Override
         void onSubscribe(Subscription subscription) {
             this.subscription = subscription
-            // this.subscription.request(Long.MAX_VALUE)
-            this.subscription.request(1)
+            this.subscription.request(Long.MAX_VALUE)
+            //this.subscription.request(1)
             logger.info("SensorMeasurements subscription complete")
         }
 
