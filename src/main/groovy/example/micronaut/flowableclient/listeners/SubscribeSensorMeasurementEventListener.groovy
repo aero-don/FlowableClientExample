@@ -88,7 +88,7 @@ class SubscribeSensorMeasurementEventListener implements ApplicationEventListene
 
         @Override
         void onNext(SensorMeasurement sensorMeasurement) {
-            sensorMeasurementsProcessed++
+            sensorMeasurementsProcessed += 1
             Instant now = Instant.now()
             if (!nextLogInstant || now.plusMillis(1) >= nextLogInstant) {
                 logger.info("sensorMeasurementsProcessed: ${sensorMeasurementsProcessed} :: sensorMeasurement: ${sensorMeasurement}")
